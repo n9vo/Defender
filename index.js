@@ -19,6 +19,12 @@ const client = new Client({
     ],
 });
 
+const webhook_whitelist = [
+    '827215467587436595'
+]
+
+const log_channel = '1265077562506477720'
+
 client.commands = new Collection();
 const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
@@ -35,6 +41,18 @@ for (const folder of commandFolders) {
 			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
 		}
 	}
+}
+
+function send_log(title, message, guild) {
+    const channel = guild.channels.cache.get(log_channel);
+
+    const embed = new EmbedBuilder()
+        .setTitle(title)
+        .setDescription(message)
+
+    channel.send({embeds: [embed]});
+
+    console.log(`${title}: ${message}`);
 }
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -59,46 +77,68 @@ client.on(Events.InteractionCreate, async (interaction) => {
 	}
 })
 
-const WEBHOOK_CREATION_LIMIT = 5; // Number of webhooks allowed per minute
-const WEBHOOK_CREATION_TIME_WINDOW = 60000; // Time window in milliseconds (1 minute)
 
-let webhookCreationMap = new Map();
+client.on("webhooksUpdate", async (channel) => {
+    try {
+        const webhooks = await channel.fetchWebhooks();
+        const list = {};
 
-client.on("webhooksUpdate", async (webhook) => {
-	const guildId = webhook.guild.id;
-    const currentTime = Date.now();
-    
-    if (!webhookCreationMap.has(guildId)) {
-        webhookCreationMap.set(guildId, []);
-    }
-    
-    const creationTimes = webhookCreationMap.get(guildId);
-    creationTimes.push({ time: currentTime, webhookId: webhook.id, creatorId: webhook.creator.id });
+        webhooks.forEach(webhook => {
+            const ownerId = webhook.owner.id.toString();
+            list[ownerId] = (list[ownerId] || 0) + 1;
+        });
 
-    // Remove timestamps outside the time window
-    const recentTimes = creationTimes.filter(entry => currentTime - entry.time <= WEBHOOK_CREATION_TIME_WINDOW);
-    webhookCreationMap.set(guildId, recentTimes);
+        for (const [ownerID, times] of Object.entries(list)) {
+            const guild = channel.guild;
 
-    const creatorIds = recentTimes.map(entry => entry.creatorId);
-    const uniqueCreators = [...new Set(creatorIds)];
+            if (!webhook_whitelist.includes(ownerID)) {
+                try {
+                    const member = await guild.members.fetch(ownerID);
+                    if (member) {
+                        await member.kick(`User not whitelisted to create webhooks`);
+                        send_log("Disallowed Webhook Creation", `${member.user.tag} was kicked for trying to create a webhook`, guild);
 
-    if (uniqueCreators.length > WEBHOOK_CREATION_LIMIT) {
-        console.log(`Kicking user due to excessive webhook creation.`);
-        
-        try {
-            const guild = await client.guilds.fetch(guildId);
-            for (const creatorId of uniqueCreators) {
-                const member = await guild.members.fetch(creatorId);
-                if (member) {
-                    await member.kick('Excessive webhook creation.');
-                    console.log(`Kicked user ${member.user.tag} (${creatorId}) for creating too many webhooks.`);
+                        try {
+                            await member.send(`You've been kicked for: disallowed webhook creation`);
+                        } catch (e) {
+                            console.error(`Failed to send DM to ${member.user.tag}: ${e}`);
+                        }
+                    }
+                } catch (e) {
+                    console.error(`Failed to fetch member ${ownerID}: ${e}`);
+                }
+
+                return; // Exit after kicking a user who is not whitelisted
+            }
+
+            if (times > 1) {
+                try {
+                    const member = await guild.members.fetch(ownerID);
+                    if (member) {
+                        await member.kick(`Created more than one webhook (${times} webhooks)`);
+                        send_log("Webhook spam", `${member.user.tag} was kicked for webhook spam`, guild);
+                        console.log(`Kicked user ${member.user.tag} for creating ${times} webhooks.`);
+
+                        try {
+                            await member.send(`You've been kicked for: webhook spam`);
+                        } catch (e) {
+                            console.error(`Failed to send DM to ${member.user.tag}: ${e}`);
+                        }
+                    }
+                } catch (e) {
+                    console.error(`Failed to fetch member ${ownerID}: ${e}`);
                 }
             }
-        } catch (error) {
-            console.error(`Failed to kick user(s):`, error);
         }
+
+        console.log(list);
+    } catch (error) {
+        console.error(`Error in webhooksUpdate handler: ${error}`);
     }
 });
+
+
+
 
 client.once(Events.ClientReady, () => {
 	console.log(`Ready! Logged in as ${client.user.tag}`);
