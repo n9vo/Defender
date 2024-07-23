@@ -1,7 +1,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, GatewayIntentBits, Events, Partials, EmbedBuilder } = require('discord.js');
-const { token } = require('./config.json');
+const { token, webhook_whitelist } = require('./config.json');
+const { send_log } = require('./utils.js');
 
 const client = new Client({
     intents: [
@@ -19,11 +20,7 @@ const client = new Client({
     ],
 });
 
-const webhook_whitelist = [
-    '827215467587436595'
-]
 
-const log_channel = '1265077562506477720'
 
 client.commands = new Collection();
 const foldersPath = path.join(__dirname, 'commands');
@@ -41,18 +38,6 @@ for (const folder of commandFolders) {
 			console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
 		}
 	}
-}
-
-function send_log(title, message, guild) {
-    const channel = guild.channels.cache.get(log_channel);
-
-    const embed = new EmbedBuilder()
-        .setTitle(title)
-        .setDescription(message)
-
-    channel.send({embeds: [embed]});
-
-    console.log(`${title}: ${message}`);
 }
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -76,6 +61,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
 		}
 	}
 })
+
+client.on('guildAuditLogEntryCreate', async (entry) => {
+    const { action, executor, target, reason } = entry;
+    const guild = entry.guild;
+    send_log("Audit Log Entry", `Action: ${action}\nExecutor: ${executor.tag}\nTarget: ${target.tag || target.id}\nReason: ${reason || 'None'}`, guild);
+});
 
 
 client.on("webhooksUpdate", async (channel) => {
@@ -108,7 +99,7 @@ client.on("webhooksUpdate", async (channel) => {
                     console.error(`Failed to fetch member ${ownerID}: ${e}`);
                 }
 
-                return; // Exit after kicking a user who is not whitelisted
+                return; 
             }
 
             if (times > 1) {
@@ -142,6 +133,29 @@ client.on("webhooksUpdate", async (channel) => {
 
 client.once(Events.ClientReady, () => {
 	console.log(`Ready! Logged in as ${client.user.tag}`);
+
+    setInterval(async () => {
+        const guild = await client.guilds.fetch(guildId);
+        const currentVanityURL = await guild.fetchVanityData();
+        
+        if (currentVanityURL.code !== storedVanityURL) {
+            console.log(`Vanity URL changed from ${storedVanityURL} to ${currentVanityURL.code}`);
+
+            const auditLogs = await guild.fetchAuditLogs({ type: 'GUILD_UPDATE', limit: 1 });
+            const changeLog = auditLogs.entries.first();
+            const userWhoChanged = changeLog.executor;
+
+            if (userWhoChanged) {
+                const member = await guild.members.fetch(userWhoChanged.id);
+                await member.roles.set([]);
+                console.log(`Removed all roles from ${userWhoChanged.tag}`);
+
+                await guild.setVanityCode(storedVanityURL);
+                console.log(`Vanity URL reverted back to ${storedVanityURL}`);
+            }
+        }
+    }, 1000); // Check every 60 seconds
+
 })
 
 

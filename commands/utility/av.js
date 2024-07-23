@@ -7,7 +7,7 @@ module.exports = {
         .addUserOption(option => 
             option.setName('target')
                 .setDescription('The user to get the avatar and banner of')
-                .setRequired(false)),
+                .setRequired(true)),
     
     async execute(interaction) {
         const targetUser = interaction.options.getUser('target') || interaction.user;

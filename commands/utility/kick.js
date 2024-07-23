@@ -3,11 +3,11 @@ const { send_log } = require('../../utils');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('ban')
-        .setDescription('Bans a user from the server')
+        .setName('kick')
+        .setDescription('Kicks a user from the server')
         .addUserOption(option => 
             option.setName('target')
-                .setDescription('The user to ban')
+                .setDescription('The user to kick')
                 .setRequired(true)),
     
     async execute(interaction) {
@@ -25,14 +25,14 @@ module.exports = {
         }
 
         try {
-            await member.ban({ reason: 'Banned by command' });
+            await member.kick({ reason: 'kicked by command' });
             
-            send_log("User Banned", `${targetUser.tag} has been banned from the server.`, interaction.guild)
+            send_log("User kicked", `${targetUser.tag} has been kicked from the server.`, interaction.guild)
 
-            await interaction.reply(`${targetUser.tag} has been banned!`);
+            await interaction.reply(`${targetUser.tag} has been kicked!`);
         } catch (error) {
-            console.error('Error banning user:', error);
-            await interaction.reply({ content: 'There was an error trying to ban the user.', ephemeral: true });
+            console.error('Error kicking user:', error);
+            await interaction.reply({ content: 'There was an error trying to kick the user.', ephemeral: true });
         }
     },
 };
