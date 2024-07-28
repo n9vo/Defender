@@ -89,7 +89,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ## Contact
 
 For any questions or feedback, please open an issue on the GitHub repository.
-
----
-
-Thank you for using Defender! Together, we can build a more secure digital world.
