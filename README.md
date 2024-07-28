@@ -1,6 +1,6 @@
 # Defender
 
-Defender is an open-source project designed to provide robust security utilities and functionalities for various applications. It is free to use for anyone.
+Defender is an open-source Discord bot designed to provide robust security utilities and functionalities for your server. It is free to use for anyone.
 
 ## Features
 
@@ -21,6 +21,37 @@ cd Defender
 npm install
 ```
 
+## Creating and Inviting the Discord Bot
+
+1. Go to the [Discord Developer Portal](https://discord.com/developers/applications).
+2. Click "New Application" and name your bot.
+3. Under the "Bot" section, click "Add Bot" and confirm.
+4. Copy the bot token. You will need this for the configuration.
+5. Go to the "OAuth2" section, then "URL Generator". Select `bot` and `applications.commands` scopes. Under "Bot Permissions", select the necessary permissions for your bot.
+6. Copy the generated URL, paste it into your browser, and invite the bot to your server.
+
+## Configuration
+
+Edit the `config.json` file to set up your desired configurations. Here is an example configuration:
+
+```json
+{
+    "clientId": "YOUR_CLIENT_ID",
+    "guildId": "YOUR_GUILD_ID",
+    "token" : "YOUR_BOT_TOKEN",
+    "webhook_whitelist": ["WEBHOOK_URL"],
+    "admins": ["ADMIN_USER_IDS"],
+    "log_channel": "LOG_CHANNEL_ID"
+}
+```
+
+- `clientId`: Your Discord bot client ID.
+- `guildId`: Your Discord server ID.
+- `token`: Your Discord bot token.
+- `webhook_whitelist`: List of webhook URLs allowed to interact with the bot.
+- `admins`: List of user IDs with admin privileges.
+- `log_channel`: Channel ID where logs are sent.
+
 ## Usage
 
 ### Running the Application
@@ -30,10 +61,6 @@ You can start the application using:
 ```bash
 node index.js
 ```
-
-### Configuration
-
-Edit the `config.json` file to set up your desired configurations.
 
 ## File Structure
 
