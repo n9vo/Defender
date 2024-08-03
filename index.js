@@ -134,27 +134,27 @@ client.on("webhooksUpdate", async (channel) => {
 client.once(Events.ClientReady, () => {
 	console.log(`Ready! Logged in as ${client.user.tag}`);
 
-    setInterval(async () => {
-        const guild = await client.guilds.fetch(guildId);
-        const currentVanityURL = await guild.fetchVanityData();
+    // setInterval(async () => {
+    //     const guild = await client.guilds.fetch(guildId);
+    //     const currentVanityURL = await guild.fetchVanityData();
         
-        if (currentVanityURL.code !== storedVanityURL) {
-            console.log(`Vanity URL changed from ${storedVanityURL} to ${currentVanityURL.code}`);
+    //     if (currentVanityURL.code !== storedVanityURL) {
+    //         console.log(`Vanity URL changed from ${storedVanityURL} to ${currentVanityURL.code}`);
 
-            const auditLogs = await guild.fetchAuditLogs({ type: 'GUILD_UPDATE', limit: 1 });
-            const changeLog = auditLogs.entries.first();
-            const userWhoChanged = changeLog.executor;
+    //         const auditLogs = await guild.fetchAuditLogs({ type: 'GUILD_UPDATE', limit: 1 });
+    //         const changeLog = auditLogs.entries.first();
+    //         const userWhoChanged = changeLog.executor;
 
-            if (userWhoChanged) {
-                const member = await guild.members.fetch(userWhoChanged.id);
-                await member.roles.set([]);
-                console.log(`Removed all roles from ${userWhoChanged.tag}`);
+    //         if (userWhoChanged) {
+    //             const member = await guild.members.fetch(userWhoChanged.id);
+    //             await member.roles.set([]);
+    //             console.log(`Removed all roles from ${userWhoChanged.tag}`);
 
-                await guild.setVanityCode(storedVanityURL);
-                console.log(`Vanity URL reverted back to ${storedVanityURL}`);
-            }
-        }
-    }, 1000); // Check every 60 seconds
+    //             await guild.setVanityCode(storedVanityURL);
+    //             console.log(`Vanity URL reverted back to ${storedVanityURL}`);
+    //         }
+    //     }
+    // }, 1000); // Check every 60 seconds
 
 })
 
