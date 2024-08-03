@@ -1,0 +1,8 @@
+{
+    "clientId": "",
+    "guildId": "",
+    "token" : "",
+    "webhook_whitelist": [""],
+    "admins": [""],
+    "log_channel": ""
+}
