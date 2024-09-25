@@ -4,12 +4,9 @@ Defender is an open-source Discord bot designed to provide robust security utili
 
 ## Features
 
-- **Raid Protection**: Automatically detects and mitigates raid attempts to protect your server.
-- **Anti-Spam**: Efficiently filters and removes spam messages.
-- **User Verification**: Implements user verification processes to ensure only legitimate users gain access.
-- **Automated Moderation**: Includes automated moderation tools to manage user behavior.
+- **Anti Webhook Spam**: Efficiently filters and removes spam messages.
+- **Moderation Tools**: Includes moderation tools for administrators to manage user behavior.
 - **Logging**: Logs important events and actions for review and analysis.
-- **Custom Commands**: Allows creation of custom commands to extend functionality.
 
 ## Installation
 
