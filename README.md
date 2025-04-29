@@ -1,6 +1,6 @@
 # Defender
 
-Defender is an open-source Discord bot designed to provide robust security utilities and functionalities for your server. It is free to use for anyone.
+Defender is a simple open-source Discord bot designed to provide robust security utilities and functionalities for your server. It is free to use for anyone.
 
 ## Features
 
